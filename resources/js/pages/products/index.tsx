@@ -13,7 +13,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function ProductsEntryPage() {
+export default function ProductsIndexPage() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Products" />

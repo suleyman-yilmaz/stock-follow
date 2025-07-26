@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\StockCard\StockCardController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -20,9 +21,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('products/index');
     })->name('products');
 
-    Route::get('/stock/card', function () {
-        return Inertia::render('stock/card');
-    })->name('stock.card');
+    Route::controller(StockCardController::class)->prefix('/stock/card')->name('stock.card.')->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::post('/store', 'store')->name('store');
+        Route::get('/edit/{id}', 'edit')->name('edit');
+        Route::delete('/destroy/{id}', 'destroy')->name('destroy');
+    });
 });
 
 require __DIR__.'/settings.php';
