@@ -88,8 +88,8 @@ export default function StockCardPage({ stockCards }: Props) {
             <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-6">
                 <div className="flex items-center justify-between">
                     <div className="pl-8">
-                        <h1 className="text-3xl font-extrabold text-gray-800">Stock Card</h1>
-                        <p className="text-sm text-gray-500">Manage and track your stock items.</p>
+                        <h1 className="text-3xl font-extrabold text-gray-800 dark:text-white">Stock Card</h1>
+                        <p className="text-sm text-gray-500 dark:text-gray-600">Manage and track your stock items.</p>
                     </div>
                     <Button variant="default" className="gap-2" onClick={openCreatePanel}>
                         <Plus className="h-4 w-4" />
@@ -99,55 +99,80 @@ export default function StockCardPage({ stockCards }: Props) {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Stock Cards</CardTitle>
+                        <CardTitle className="dark:text-gray-100">Stock Cards</CardTitle>
                     </CardHeader>
                     <CardContent>
                         {stockCards.length === 0 ? (
-                            <p className="text-sm text-gray-500">No stock cards yet.</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">No stock cards yet.</p>
                         ) : (
                             <div className="flex flex-col gap-4">
                                 {stockCards.map((s) => (
                                     <div
                                         key={s.id}
-                                        className="flex items-center justify-between border rounded-lg p-4 shadow-md bg-white hover:shadow-lg transition-shadow"
+                                        className="flex items-center justify-between border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-md bg-white dark:bg-gray-800 hover:shadow-lg dark:hover:shadow-gray-900/20 transition-shadow"
                                     >
                                         <div className="flex flex-col space-y-1">
-                                            <h3 className="text-lg font-semibold text-gray-900">{s.productName}</h3>
-                                            <p className="text-gray-700 text-sm">
-                                                <span className="font-semibold">Barcode:</span> {s.barcode}
+                                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{s.productName}</h3>
+                                            <p className="text-gray-600 dark:text-gray-300 text-sm">
+                                                <span className="font-semibold text-gray-800 dark:text-gray-200">Barcode:</span>{' '}
+                                                <span className="text-gray-700 dark:text-blue-300 font-mono">{s.barcode}</span>
                                             </p>
-                                            <p className="text-gray-700 text-sm capitalize">
-                                                <span className="font-semibold">Unit:</span> {s.unit}
+                                            <p className="text-gray-600 dark:text-gray-300 text-sm capitalize">
+                                                <span className="font-semibold text-gray-800 dark:text-gray-200">Unit:</span>{' '}
+                                                <span className="text-gray-700 dark:text-purple-300">{s.unit}</span>
                                             </p>
-                                            <p className="text-gray-700 text-sm">
-                                                <span className="font-semibold">Status:</span>{' '}
-                                                <span className={s.status ? 'text-green-600' : 'text-red-600'}>
+                                            <p className="text-gray-600 dark:text-gray-300 text-sm">
+                                                <span className="font-semibold text-gray-800 dark:text-gray-200">Status:</span>{' '}
+                                                <span className={s.status
+                                                    ? 'text-green-600 dark:text-green-400 font-medium'
+                                                    : 'text-red-600 dark:text-red-400 font-medium'
+                                                }>
                                                     {s.status ? 'Active' : 'Inactive'}
                                                 </span>
                                             </p>
                                         </div>
 
                                         <div className="flex space-x-3">
-                                            <Button variant={'outline'} onClick={() => openEditPanel(s)}>
-                                                <Edit className="h-5 w-5 text-yellow-600" />
+                                            <Button
+                                                variant={'outline'}
+                                                onClick={() => openEditPanel(s)}
+                                                className="border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                            >
+                                                <Edit className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
                                             </Button>
                                             <Dialog>
                                                 <DialogTrigger asChild={true}>
-                                                    <Button variant={'outline'}>
-                                                        <Trash2 className="h-5 w-5 text-red-600" />
+                                                    <Button
+                                                        variant={'outline'}
+                                                        className="border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                                    >
+                                                        <Trash2 className="h-5 w-5 text-red-600 dark:text-red-400" />
                                                     </Button>
                                                 </DialogTrigger>
-                                                <DialogContent>
+                                                <DialogContent className="dark:bg-gray-800 dark:border-gray-700">
                                                     <DialogHeader>
-                                                        <DialogTitle>Are you sure you want to delete?</DialogTitle>
-                                                        <DialogDescription>This action cannot be undone. Please make sure you are sure.</DialogDescription>
+                                                        <DialogTitle className="dark:text-white">Are you sure you want to delete?</DialogTitle>
+                                                        <DialogDescription className="dark:text-gray-300">
+                                                            This action cannot be undone. Please make sure you are sure.
+                                                        </DialogDescription>
                                                     </DialogHeader>
                                                     <DialogFooter>
-                                                        <DialogClose asChild={true}><Button variant={'outline'}>Cancel</Button></DialogClose>
+                                                        <DialogClose asChild={true}>
+                                                            <Button
+                                                                variant={'outline'}
+                                                                className="border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-200"
+                                                            >
+                                                                Cancel
+                                                            </Button>
+                                                        </DialogClose>
                                                         <DialogClose asChild={true}>
                                                             <Link href={route('stock.card.destroy', s.id)} method={'delete'}>
-                                                                <Button variant={'outline'} disabled={processing}>
-                                                                    <Trash2 className="h-5 w-5 text-red-600" />
+                                                                <Button
+                                                                    variant={'outline'}
+                                                                    disabled={processing}
+                                                                    className="border-red-300 dark:border-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400"
+                                                                >
+                                                                    <Trash2 className="h-5 w-5 mr-2" />
                                                                     {processing ? 'Deleting...' : 'Yes, delete'}
                                                                 </Button>
                                                             </Link>
@@ -173,7 +198,7 @@ export default function StockCardPage({ stockCards }: Props) {
 
                 {/* Slide-in Panel */}
                 <div
-                    className={`fixed top-0 right-0 z-50 h-full w-[400px] transform bg-white shadow-xl transition-transform duration-300 ${showPanel ? 'translate-x-0' : 'translate-x-full'
+                    className={`dark:bg-gray-700 fixed top-0 right-0 z-50 h-full w-[400px] transform bg-white shadow-xl transition-transform duration-300 ${showPanel ? 'translate-x-0' : 'translate-x-full'
                         }`}
                 >
                     <div className="flex items-center justify-between border-b p-4">

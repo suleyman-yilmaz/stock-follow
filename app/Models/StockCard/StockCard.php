@@ -2,6 +2,7 @@
 
 namespace App\Models\StockCard;
 
+use App\Models\StockMovement\StockMovement;
 use Illuminate\Database\Eloquent\Model;
 
 class StockCard extends Model
@@ -15,4 +16,9 @@ class StockCard extends Model
         'unit',
         'status'
     ];
+
+    public function movements()
+    {
+        return $this->hasMany(StockMovement::class, 'stock_card_id', 'id');
+    }
 }
