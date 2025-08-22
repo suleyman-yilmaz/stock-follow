@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('productName');
-            $table->string('barcode')->unique();
+            $table->string('barcode');
             $table->string('unit');
             $table->boolean('status')->default(1);
             $table->timestamps();

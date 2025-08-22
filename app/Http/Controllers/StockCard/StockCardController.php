@@ -16,7 +16,7 @@ class StockCardController extends Controller
      */
     public function index()
     {
-        $stockCards = StockCard::all();
+        $stockCards = StockCard::where('user_id', Auth::id())->get();
         return Inertia::render('stock/card', [
             'stockCards' => $stockCards,
         ]);
@@ -29,18 +29,20 @@ class StockCardController extends Controller
     {
         $validatedData = $request->validate([
             'productName' => 'required|string',
-            'barcode' => 'required|string',
-            'unit' => 'required|string',
-            'status' => 'required|boolean|in:0,1',
+            'barcode'     => 'required|string',
+            'unit'        => 'required|string',
+            'status'      => 'required|boolean|in:0,1',
         ]);
         try {
-
-            $validatedData['user_id'] = Auth::user()->id;
-            $stock_card = StockCard::create($validatedData);
-            return back();
+            $user = Auth::user();
+            $exists = StockCard::where('user_id', $user->id)->where('barcode', $request->barcode)->exists();
+            if ($exists) return redirect()->route('stock.card.index')->with('error', 'The barcode you are trying to add already exists');
+            $validatedData['user_id'] = $user->id;
+            StockCard::create($validatedData);
+            return back()->withSuccess('Stock card added successfully.');
         } catch (\Exception $e) {
-            Log::info('error', ['message' => $e->getMessage()]);
-            return back()->with('error', 'An error occurred: ' . $e->getMessage());
+            Log::error('StockCard Store Error', ['message' => $e->getMessage()]);
+            return back()->withErrors('An error occurred: ' . $e->getMessage());
         }
     }
 
@@ -56,12 +58,14 @@ class StockCardController extends Controller
             'status' => 'required|boolean|in:0,1',
         ]);
         try {
+            $exist = StockCard::where('user_id', Auth::id())->where('barcode', $request->barcode)->where('id', '!=', $id)->exists();
+            if ($exist) return redirect()->route('stock.card.index')->with('error', 'The barcode you are trying to add already exists');
             $stock_card = StockCard::findOrFail($id);
             $stock_card->update($validatedData);
-            return back();
+            return back()->withSuccess('Stock card updated successfully.');
         } catch (\Exception $e) {
             Log::info('error', ['message' => $e->getMessage()]);
-            return back()->with('error', 'An error occurred: ' . $e->getMessage());
+            return back()->withErrors('An error occurred: ' . $e->getMessage());
         }
     }
 
@@ -72,6 +76,6 @@ class StockCardController extends Controller
     {
         $stockCard = StockCard::findOrFail($id);
         $stockCard->delete();
-        return back();
+        return back()->withSuccess('Stock card deleted successfully.');
     }
 }
