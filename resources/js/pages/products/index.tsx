@@ -16,9 +16,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, useForm } from '@inertiajs/react';
-import { Pencil, Plus, Trash2, X } from 'lucide-react';
-import React, { useState } from 'react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
+import { Pencil, Plus, RotateCcw, Settings2, Trash2, X } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Toaster, toast } from 'sonner';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
@@ -57,6 +58,9 @@ export default function ProductsIndexPage({ stock_cards, products }: Props) {
     const [lockStockCard, setLockStockCard] = useState(false);
     const [panelMode, setPanelMode] = useState<'create' | 'edit'>('create');
     const [selectedCard, setSelectedCard] = useState<Products | null>(null);
+    const [searchProductName, setSearchProductName] = useState('');
+    const [filterMovementType, setFilterMovementType] = useState('');
+    const [filterUnit, setFilterUnit] = useState('');
 
     const { data, setData, post, put, processing, errors, reset } = useForm({
         stock_card_id: '',
@@ -124,9 +128,54 @@ export default function ProductsIndexPage({ stock_cards, products }: Props) {
         }
     };
 
+    const handleSearchProductName = (value: string) => {
+        setSearchProductName(value);
+        const v = value.trim();
+        router.get('/products', v ? { productName: v, movementType: filterMovementType, unit: filterUnit } : {}, {
+            preserveScroll: true,
+            preserveState: true,
+            replace: true,
+        });
+    };
+
+    const handleFilterMovementType = (value: 'all' | 'in' | 'out') => {
+        setFilterMovementType(value);
+        const v = value.trim();
+        router.get('/products', v ? { productName: searchProductName, movementType: v, unit: filterUnit } : {}, {
+            preserveScroll: true,
+            preserveState: true,
+            replace: true,
+        });
+    };
+
+    const handleFilterUnit = (value: 'ad' | 'mt' | 'lt' | 'kg') => {
+        setFilterUnit(value);
+        const v = value.trim();
+        router.get('/products', v ? { productName: searchProductName, movementType: filterMovementType, unit: v } : {}, {
+            preserveScroll: true,
+            preserveState: true,
+            replace: true,
+        });
+    };
+
+    const { props } = usePage<{
+        flash?: { success?: string; error?: string };
+    }>();
+
+    useEffect(() => {
+        if (props.flash?.success) {
+            toast.success(props.flash.success);
+        }
+        if (props.flash?.error) {
+            toast.error(props.flash.error);
+            setShowPanel(false);
+        }
+    }, [props.flash]);
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Products" />
+            <Toaster position={'top-right'} richColors={true} expand={true} duration={4000}></Toaster>
             <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-6">
                 <div className="flex items-center justify-between">
                     <div className="pl-8">
@@ -140,35 +189,75 @@ export default function ProductsIndexPage({ stock_cards, products }: Props) {
                 </div>
 
                 {/* FİLTRE KARTI (statik) */}
-                <Card>
-                    <CardHeader className="flex flex-col gap-2">
-                        <CardTitle>Filter</CardTitle>
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                            <div className="space-y-1">
-                                <Label htmlFor="search">Search by name</Label>
-                                <Input id="search" placeholder="Type product name..." />
+                <Card className="rounded-2xl border-0 shadow-sm ring-1 ring-black/5 dark:ring-white/10">
+                    <CardHeader className="pb-2">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <div className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10">
+                                    <Settings2 className="h-4 w-4 text-primary" />
+                                </div>
+                                <CardTitle className="text-lg">Filters</CardTitle>
                             </div>
-
-                            <div className="space-y-1">
-                                <Label>Sort</Label>
-                                <Select>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select order" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="az">Name (A → Z)</SelectItem>
-                                        <SelectItem value="za">Name (Z → A)</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            <div className="flex items-end">
-                                <Button type="button" variant="secondary" className="w-full">
+                            <Link href={'/products'}>
+                                <Button variant="outline" size="sm" className="gap-2 text-muted-foreground hover:text-foreground">
+                                    <RotateCcw className="h-4 w-4" />
                                     Reset
                                 </Button>
-                            </div>
+                            </Link>
                         </div>
                     </CardHeader>
+
+                    <CardContent className="pt-2">
+                        <div className="rounded-2xl bg-muted/40 p-4">
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                {/* Search */}
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="search" className="text-[13px] text-muted-foreground">
+                                        Search by name
+                                    </Label>
+                                    <Input
+                                        id="search"
+                                        placeholder="Type product name..."
+                                        className="h-10 rounded-xl border-muted-foreground/20 focus-visible:ring-2"
+                                        type={'text'}
+                                        value={searchProductName}
+                                        onChange={(e) => handleSearchProductName(e.target.value)}
+                                    />
+                                </div>
+
+                                {/* Movement Type */}
+                                <div className="space-y-1.5">
+                                    <Label className="text-[13px] text-muted-foreground">Movement Type</Label>
+                                    <Select value={filterMovementType} onValueChange={handleFilterMovementType}>
+                                        <SelectTrigger className="h-10 rounded-xl border-muted-foreground/20 focus:ring-0 focus-visible:ring-2">
+                                            <SelectValue placeholder="Select movement type" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value={'all'}>All</SelectItem>
+                                            <SelectItem value={'in'}>In</SelectItem>
+                                            <SelectItem value={'out'}>Out</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                {/* Unit */}
+                                <div className="space-y-1.5">
+                                    <Label className="text-[13px] text-muted-foreground">Unit</Label>
+                                    <Select value={filterUnit} onValueChange={handleFilterUnit}>
+                                        <SelectTrigger className="h-10 rounded-xl border-muted-foreground/20 focus:ring-0 focus-visible:ring-2">
+                                            <SelectValue placeholder="Select unit" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="ad">Piece (ad)</SelectItem>
+                                            <SelectItem value="mt">Metre (mt)</SelectItem>
+                                            <SelectItem value="lt">Litre (lt)</SelectItem>
+                                            <SelectItem value="kg">Kilogram (kg)</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                        </div>
+                    </CardContent>
                 </Card>
 
                 <Card>

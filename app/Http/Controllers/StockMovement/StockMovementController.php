@@ -15,22 +15,24 @@ class StockMovementController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $stock_cards = StockCard::select('id', 'productName')->get();
-        $products = StockMovement::with('card')->get();
+        $user = Auth::id();
+        $stock_cards = StockCard::select('id', 'productName')->where('user_id', $user)->get();
+        $query = StockMovement::query()->with('card')->where('user_id', $user)
+            ->when($request->filled('productName'), function ($q) use ($request) {
+                $name = $request->string('productName')->trim();
+                $q->whereHas('card', fn($qq) => $qq->where('productName', 'like', "%{$name}%"));
+            })->when($request->filled('movementType') && in_array($request->movementType, ['in', 'out']), function ($q) use ($request) {
+                    $q->where('movement_type', $request->movementType);
+            })->when($request->filled('unit'), function ($q) use ($request) {
+                $q->whereHas('card', fn($qq) => $qq->where('unit', $request->unit));
+            });
+        $products = $query->get();
         return Inertia::render('products/index', [
             'stock_cards' => $stock_cards,
             'products' => $products,
         ]);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
     }
 
     /**
@@ -50,27 +52,11 @@ class StockMovementController extends Controller
         try {
             $validated['user_id'] = Auth::user()->id;
             $product = StockMovement::create($validated);
-            return back();
+            return redirect('/products')->withSuccess('Product added successfully');
         } catch (\Exception $e) {
             Log::info('error', ['message' => $e->getMessage()]);
             return back()->with('error', 'An error occurred: ' . $e->getMessage());
         }
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
     }
 
     /**
@@ -91,7 +77,7 @@ class StockMovementController extends Controller
             $validated['user_id'] = Auth::user()->id;
             $product = StockMovement::findOrFail($id);
             $product->update($validated);
-            return back();
+            return back()->withSuccess('Product updated successfully');
         } catch (\Exception $e) {
             Log::info('error', ['message' => $e->getMessage()]);
             return back()->with('error', 'An error occurred: ' . $e->getMessage());
@@ -105,6 +91,6 @@ class StockMovementController extends Controller
     {
         $product = StockMovement::findOrFail($id);
         $product->delete();
-        return back();
+        return back()->withSuccess('Product deleted successfully');
     }
 }
