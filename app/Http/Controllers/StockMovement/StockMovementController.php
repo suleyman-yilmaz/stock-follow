@@ -18,8 +18,8 @@ class StockMovementController extends Controller
     public function index(Request $request)
     {
         $user = Auth::id();
-        $stock_cards = StockCard::select('id', 'productName')->where('user_id', $user)->get();
-        $query = StockMovement::query()->with('card')->where('user_id', $user)
+        $stock_cards = StockCard::select('id', 'productName')->where('user_id', $user)->where('status', true)->get();
+        $query = StockMovement::query()->with('card')->where('user_id', $user)->whereHas('card', fn($q) => $q->where('status', true))
             ->when($request->filled('productName'), function ($q) use ($request) {
                 $name = $request->string('productName')->trim();
                 $q->whereHas('card', fn($qq) => $qq->where('productName', 'like', "%{$name}%"));
@@ -77,7 +77,7 @@ class StockMovementController extends Controller
             $validated['user_id'] = Auth::user()->id;
             $product = StockMovement::findOrFail($id);
             $product->update($validated);
-            return back()->withSuccess('Product updated successfully');
+            return redirect('/products')->withSuccess('Product updated successfully');
         } catch (\Exception $e) {
             Log::info('error', ['message' => $e->getMessage()]);
             return back()->with('error', 'An error occurred: ' . $e->getMessage());
@@ -91,6 +91,6 @@ class StockMovementController extends Controller
     {
         $product = StockMovement::findOrFail($id);
         $product->delete();
-        return back()->withSuccess('Product deleted successfully');
+        return redirect('/products')->withSuccess('Product deleted successfully');
     }
 }

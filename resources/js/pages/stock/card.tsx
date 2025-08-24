@@ -4,8 +4,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { Plus, X, Edit, Trash2 } from 'lucide-react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
+import { Plus, X, Edit, Trash2, Settings2, RotateCcw } from 'lucide-react';
 import React, { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import InputError from '@/components/input-error';
@@ -34,6 +34,10 @@ export default function StockCardPage({ stockCards }: Props) {
     const [showPanel, setShowPanel] = useState(false);
     const [panelMode, setPanelMode] = useState<'create' | 'edit'>('create');
     const [selectedCard, setSelectedCard] = useState<StockCard | null>(null);
+    const [searchCardName, setSearchCardName] = useState('');
+    const [searchBarcode, setSearchBarcode] = useState('');
+    const [filterUnit, setFilterUnit] = useState('');
+    const [filterStatus, setFilterStatus] = useState('');
 
     const { data, setData, post, put, processing, errors, reset } = useForm({
         productName: "",
@@ -65,7 +69,7 @@ export default function StockCardPage({ stockCards }: Props) {
         e.preventDefault();
 
         if (panelMode === 'edit' && selectedCard) {
-            put(`/stock/card/update/${selectedCard.id}`, {
+            put(`/stock-card/update/${selectedCard.id}`, {
                 ...data,
                 onSuccess: () => {
                     setShowPanel(false);
@@ -75,13 +79,53 @@ export default function StockCardPage({ stockCards }: Props) {
                 },
             });
         } else {
-            post('/stock/card/store', {
+            post('/stock-card/store', {
                 onSuccess: () => {
                     setShowPanel(false);
                     reset();
                 },
             });
         }
+    };
+
+    const handleSearchCardName = (value: string) => {
+        setSearchCardName(value);
+        const v = value.trim();
+        router.get('/stock-card', v ? { barcode:searchBarcode, cardName: v, unit: filterUnit, status: filterStatus } : {}, {
+            preserveScroll: true,
+            preserveState: true,
+            replace: true,
+        });
+    };
+
+    const handleSearchBarcode = (value: string) => {
+        setSearchBarcode(value);
+        const v = value.trim();
+        router.get('/stock-card', v ? { barcode: v, cardName: searchCardName, unit: filterUnit, status: filterStatus } : {}, {
+            preserveScroll: true,
+            preserveState: true,
+            replace: true,
+        });
+    };
+
+    const handleFilterUnit = (value: 'ad' | 'mt' | 'lt' | 'kg') => {
+        setFilterUnit(value);
+        const v = value.trim();
+        router.get('/stock-card', v ? { barcode: searchBarcode, cardName: searchCardName, unit: v, status: filterStatus } : {}, {
+            preserveScroll: true,
+            preserveState: true,
+            replace: true,
+        });
+    };
+
+    const handleFilterStatus = (value: '1' | '0') => {
+        setFilterStatus(value);
+        const v = value.trim();
+        router.get('/stock-card', v ? { barcode: searchBarcode, cardName: searchCardName, unit: filterUnit, status: v } : {}, {
+            preserveScroll: true,
+            preserveState: true,
+            replace: true,
+        });
     };
 
     const { props } = usePage<{
@@ -113,6 +157,91 @@ export default function StockCardPage({ stockCards }: Props) {
                         Create Stock Card
                     </Button>
                 </div>
+
+                <Card className="rounded-2xl border-0 shadow-sm ring-1 ring-black/5 dark:ring-white/10">
+                    <CardHeader className="pb-2">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <div className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10">
+                                    <Settings2 className="h-4 w-4 text-primary" />
+                                </div>
+                                <CardTitle className="text-lg">Filters</CardTitle>
+                            </div>
+                            <Link href={'/stock-card'}>
+                                <Button variant="outline" size="sm" className="gap-2 text-muted-foreground hover:text-foreground">
+                                    <RotateCcw className="h-4 w-4" />
+                                    Reset
+                                </Button>
+                            </Link>
+                        </div>
+                    </CardHeader>
+
+                    <CardContent className="pt-2">
+                        <div className="rounded-2xl bg-muted/40 p-4">
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                                {/* Search */}
+
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="search" className="text-[13px] text-muted-foreground">
+                                        Search by name
+                                    </Label>
+                                    <Input
+                                        id="search"
+                                        placeholder="Type product name..."
+                                        className="h-10 rounded-xl border-muted-foreground/20 focus-visible:ring-2"
+                                        type={'text'}
+                                        value={searchCardName}
+                                        onChange={(e) => handleSearchCardName(e.target.value)}
+                                    />
+                                </div>
+
+                                {/* Movement Type */}
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="search" className="text-[13px] text-muted-foreground">
+                                        Search by barcode
+                                    </Label>
+                                    <Input
+                                        id="search"
+                                        placeholder="Type barcode..."
+                                        className="h-10 rounded-xl border-muted-foreground/20 focus-visible:ring-2"
+                                        type={'text'}
+                                        value={searchBarcode}
+                                        onChange={(e) => handleSearchBarcode(e.target.value)}
+                                    />
+                                </div>
+
+                                {/* Unit */}
+                                <div className="space-y-1.5">
+                                    <Label className="text-[13px] text-muted-foreground">Unit</Label>
+                                    <Select value={filterUnit} onValueChange={handleFilterUnit}>
+                                        <SelectTrigger className="h-10 rounded-xl border-muted-foreground/20 focus:ring-0 focus-visible:ring-2">
+                                            <SelectValue placeholder="Select unit" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="ad">Piece (ad)</SelectItem>
+                                            <SelectItem value="mt">Metre (mt)</SelectItem>
+                                            <SelectItem value="lt">Litre (lt)</SelectItem>
+                                            <SelectItem value="kg">Kilogram (kg)</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <Label className="text-[13px] text-muted-foreground">Status</Label>
+                                    <Select value={filterStatus} onValueChange={handleFilterStatus}>
+                                        <SelectTrigger className="h-10 rounded-xl border-muted-foreground/20 focus:ring-0 focus-visible:ring-2">
+                                            <SelectValue placeholder="Select status" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="1">Active</SelectItem>
+                                            <SelectItem value="0">Inactive</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
 
                 <Card>
                     <CardHeader>

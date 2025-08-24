@@ -14,9 +14,22 @@ class StockCardController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $stockCards = StockCard::where('user_id', Auth::id())->get();
+        $user = Auth::id();
+        $stockCards = StockCard::query()->where('user_id', $user)
+            ->when($request->filled('cardName'), function ($q) use($request) {
+                $q->where('productName', 'like', '%' . $request->cardName . '%');
+            })
+            ->when($request->filled('barcode'), function ($q) use($request) {
+                $q->where('barcode', 'like', '%' . $request->barcode . '%');
+            })
+            ->when($request->filled('unit'), function ($q) use($request) {
+                $q->where('unit', 'like', '%' . $request->unit . '%');
+            })
+            ->when($request->filled('status'), function ($q) use($request) {
+                $q->where('status', 'like', '%' . $request->status . '%');
+            })->get();
         return Inertia::render('stock/card', [
             'stockCards' => $stockCards,
         ]);
@@ -39,7 +52,7 @@ class StockCardController extends Controller
             if ($exists) return redirect()->route('stock.card.index')->with('error', 'The barcode you are trying to add already exists');
             $validatedData['user_id'] = $user->id;
             StockCard::create($validatedData);
-            return back()->withSuccess('Stock card added successfully.');
+            return redirect('/stock-card')->withSuccess('Stock card added successfully.');
         } catch (\Exception $e) {
             Log::error('StockCard Store Error', ['message' => $e->getMessage()]);
             return back()->withErrors('An error occurred: ' . $e->getMessage());
@@ -62,7 +75,7 @@ class StockCardController extends Controller
             if ($exist) return redirect()->route('stock.card.index')->with('error', 'The barcode you are trying to add already exists');
             $stock_card = StockCard::findOrFail($id);
             $stock_card->update($validatedData);
-            return back()->withSuccess('Stock card updated successfully.');
+            return redirect('/stock-card')->withSuccess('Stock card updated successfully.');
         } catch (\Exception $e) {
             Log::info('error', ['message' => $e->getMessage()]);
             return back()->withErrors('An error occurred: ' . $e->getMessage());
@@ -76,6 +89,6 @@ class StockCardController extends Controller
     {
         $stockCard = StockCard::findOrFail($id);
         $stockCard->delete();
-        return back()->withSuccess('Stock card deleted successfully.');
+        return redirect('/stock-card')->withSuccess('Stock card deleted successfully.');
     }
 }

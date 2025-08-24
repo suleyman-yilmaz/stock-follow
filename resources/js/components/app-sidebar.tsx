@@ -24,7 +24,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Stock Card',
-        href: '/stock/card',
+        href: '/stock-card',
         icon: Tags,
     },
 ];
