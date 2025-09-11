@@ -13,19 +13,19 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
+        title: 'Stock Card',
+        href: '/stock-card',
+        icon: Tags,
+    },
+    {
         title: 'Products',
         href: '/products',
         icon: Package,
     },
     {
         title: 'Real-Time Stock',
-        href: '/stock/realtime',
+        href: '/real-time',
         icon: Boxes,
-    },
-    {
-        title: 'Stock Card',
-        href: '/stock-card',
-        icon: Tags,
     },
 ];
 

@@ -13,11 +13,14 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+
 export default function RealTimeStockPage() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Real-Time Stock" />
-            {/* İçerik */}
+            <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-6">
+                {/* İçerik */}
+            </div>
         </AppLayout>
     );
 }

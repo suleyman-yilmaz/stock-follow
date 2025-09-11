@@ -30,7 +30,7 @@ class StockCardController extends Controller
             ->when($request->filled('status'), function ($q) use($request) {
                 $q->where('status', 'like', '%' . $request->status . '%');
             })->get();
-        return Inertia::render('stock/card', [
+        return Inertia::render('stock/index', [
             'stockCards' => $stockCards,
         ]);
     }

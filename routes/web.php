@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\RealTimeStock\RealTimeStockController;
 use App\Http\Controllers\StockCard\StockCardController;
 use App\Http\Controllers\StockMovement\StockMovementController;
 use Illuminate\Support\Facades\Route;
@@ -14,9 +15,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
 
-    Route::get('/stock/realtime', function () {
-        return Inertia::render('stock/realtime');
-    })->name('stock.realtime');
+    Route::controller(RealTimeStockController::class)->prefix('real-time')->name('real-time.')->group(function () {
+        Route::get('/', 'index')->name('index');
+    });
 
     Route::controller(StockMovementController::class)->prefix('/products')->name('stock.movement.')->group(function () {
         Route::get('/', 'index')->name('index');
