@@ -116,14 +116,22 @@ export default function ProductsIndexPage({ stock_cards, products }: Props) {
                     reset();
                     setPanelMode('create');
                     setSelectedCard(null);
+                    toast.success("Product updated successfully!");
                 },
+                onError: () => {
+                    toast.error("Product not updated!");
+                }
             });
         } else {
             post('/products/store', {
                 onSuccess: () => {
                     setShowPanel(false);
                     reset();
+                    toast.success("Product created successfully!");
                 },
+                onError: () => {
+                    toast.error("Product not created!");
+                }
             });
         }
     };

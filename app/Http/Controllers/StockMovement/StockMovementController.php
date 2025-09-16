@@ -52,10 +52,10 @@ class StockMovementController extends Controller
         try {
             $validated['user_id'] = Auth::user()->id;
             $product = StockMovement::create($validated);
-            return redirect('/products')->withSuccess('Product added successfully');
+            return Inertia::location(route('stock.movement.index'));
         } catch (\Exception $e) {
             Log::info('error', ['message' => $e->getMessage()]);
-            return back()->with('error', 'An error occurred: ' . $e->getMessage());
+            return redirect()->route('stock.movement.index')->with('error', 'An error occurred: ' . $e->getMessage());
         }
     }
 
@@ -77,10 +77,10 @@ class StockMovementController extends Controller
             $validated['user_id'] = Auth::user()->id;
             $product = StockMovement::findOrFail($id);
             $product->update($validated);
-            return redirect('/products')->withSuccess('Product updated successfully');
+            return Inertia::location(route('stock.movement.index'));
         } catch (\Exception $e) {
             Log::info('error', ['message' => $e->getMessage()]);
-            return back()->with('error', 'An error occurred: ' . $e->getMessage());
+            return redirect()->route('stock.movement.index')->with('error', 'An error occurred: ' . $e->getMessage());
         }
     }
 
@@ -91,6 +91,6 @@ class StockMovementController extends Controller
     {
         $product = StockMovement::findOrFail($id);
         $product->delete();
-        return redirect('/products')->withSuccess('Product deleted successfully');
+        return Inertia::location(route('stock.movement.index'));
     }
 }

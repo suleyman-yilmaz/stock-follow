@@ -52,10 +52,10 @@ class StockCardController extends Controller
             if ($exists) return redirect()->route('stock.card.index')->with('error', 'The barcode you are trying to add already exists');
             $validatedData['user_id'] = $user->id;
             StockCard::create($validatedData);
-            return redirect('/stock-card')->withSuccess('Stock card added successfully.');
+            return Inertia::location(route('stock.card.index'));
         } catch (\Exception $e) {
             Log::error('StockCard Store Error', ['message' => $e->getMessage()]);
-            return back()->withErrors('An error occurred: ' . $e->getMessage());
+            return redirect()->route('stock.card.index')->withErrors('An error occurred: ' . $e->getMessage());
         }
     }
 
@@ -75,10 +75,10 @@ class StockCardController extends Controller
             if ($exist) return redirect()->route('stock.card.index')->with('error', 'The barcode you are trying to add already exists');
             $stock_card = StockCard::findOrFail($id);
             $stock_card->update($validatedData);
-            return redirect('/stock-card')->withSuccess('Stock card updated successfully.');
+            return Inertia::location(route('stock.card.index'));
         } catch (\Exception $e) {
             Log::info('error', ['message' => $e->getMessage()]);
-            return back()->withErrors('An error occurred: ' . $e->getMessage());
+            return redirect()->route('stock.card.index')->withErrors('An error occurred: ' . $e->getMessage());
         }
     }
 
@@ -89,6 +89,7 @@ class StockCardController extends Controller
     {
         $stockCard = StockCard::findOrFail($id);
         $stockCard->delete();
-        return redirect('/stock-card')->withSuccess('Stock card deleted successfully.');
+        //return redirect()->route('stock.card.index')->withSuccess('Stock card deleted successfully.');
+        return Inertia::location(route('stock.card.index'));
     }
 }

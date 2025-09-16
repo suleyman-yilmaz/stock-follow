@@ -71,19 +71,27 @@ export default function StockCardPage({ stockCards }: Props) {
         if (panelMode === 'edit' && selectedCard) {
             put(`/stock-card/update/${selectedCard.id}`, {
                 ...data,
-                onSuccess: () => {
+                onFinish: () => {
                     setShowPanel(false);
                     reset();
                     setPanelMode('create');
                     setSelectedCard(null);
+                    toast.success("Stock card updated successfully!");
                 },
+                onError: () => {
+                    toast.error("Stock card not updated!");
+                }
             });
         } else {
             post('/stock-card/store', {
-                onSuccess: () => {
+                onFinish: () => {
                     setShowPanel(false);
                     reset();
+                    toast.success("Stock card created successfully!");
                 },
+                onError: () => {
+                    toast.error("Stock card not created!");
+                }
             });
         }
     };
